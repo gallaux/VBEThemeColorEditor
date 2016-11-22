@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--//
+Description: A replica of the Visual Studio 2012 "Dark" theme colors in the VBE Editor
+//-->
+<VbeTheme name="VS2012" desc="VS2012 Dark Theme">
+	<ThemeColors>
+		<Color colorID="1" HexColor="000000" />
+		<Color colorID="2" HexColor="1E1E1E" />
+		<Color colorID="3" HexColor="343A40" />
+		<Color colorID="4" HexColor="3C4248" />
+		<Color colorID="5" HexColor="D4D4D4" />
+		<Color colorID="6" HexColor="FFFFFF" />
+		<Color colorID="7" HexColor="264F78" />
+		<Color colorID="8" HexColor="569CD6" />
+		<Color colorID="9" HexColor="74B0DF" />
+		<Color colorID="10" HexColor="794E8B" />
+		<Color colorID="11" HexColor="9F74B1" />
+		<Color colorID="12" HexColor="E51400" />
+		<Color colorID="13" HexColor="D69D85" />
+		<Color colorID="14" HexColor="CE9178" />
+		<Color colorID="15" HexColor="608B4E" />
+		<Color colorID="16" HexColor="B5CEA8" />
+	</ThemeColors>
+</VbeTheme>

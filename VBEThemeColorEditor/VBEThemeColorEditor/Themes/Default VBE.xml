@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--//
+Description: Default Visual Basic Editor theme
+//-->
+<VbeTheme name="Default" desc="VBE Default Theme">
+	<ThemeColors>
+		<Color colorID="1" HexColor="FFFFFF" />
+		<Color colorID="2" HexColor="C0C0C0" />
+		<Color colorID="3" HexColor="808080" />
+		<Color colorID="4" HexColor="000000" />
+		<Color colorID="5" HexColor="FF0000" />
+		<Color colorID="6" HexColor="800000" />
+		<Color colorID="7" HexColor="FFFF00" />
+		<Color colorID="8" HexColor="808000" />
+		<Color colorID="9" HexColor="00FF00" />
+		<Color colorID="10" HexColor="008000" />
+		<Color colorID="11" HexColor="00FFFF" />
+		<Color colorID="12" HexColor="008080" />
+		<Color colorID="13" HexColor="0000FF" />
+		<Color colorID="14" HexColor="000080" />
+		<Color colorID="15" HexColor="FF00FF" />
+		<Color colorID="16" HexColor="800080" />
+	</ThemeColors>
+</VbeTheme>
