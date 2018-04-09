@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--//
+Description: A nice theme that is easier on the eyes
+//-->
+<VbeTheme name="VS2012" desc="VS2012 Dark Theme">
+	<ThemeColors>
+		<Color colorID="1" HexColor="272822" />
+		<Color colorID="2" HexColor="FF8300" />
+		<Color colorID="3" HexColor="9CF828" />
+		<Color colorID="4" HexColor="FF1C1C" />
+		<Color colorID="5" HexColor="FFFFFF" />
+		<Color colorID="6" HexColor="F0FE5B" />
+		<Color colorID="7" HexColor="B280EE" />
+		<Color colorID="8" HexColor="CDB1AD" />
+		<Color colorID="9" HexColor="A7D955" />
+		<Color colorID="10" HexColor="66FE00" />
+		<Color colorID="11" HexColor="80FF00" />
+		<Color colorID="12" HexColor="FFFFFF" />
+		<Color colorID="13" HexColor="FFFFFF" />
+		<Color colorID="14" HexColor="FFFFFF" />
+		<Color colorID="15" HexColor="FFFFFF" />
+		<Color colorID="16" HexColor="FFFFFF" />
+	</ThemeColors>
+</VbeTheme>
