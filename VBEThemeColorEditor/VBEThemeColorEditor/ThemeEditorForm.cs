@@ -275,19 +275,22 @@ namespace VBEThemeColorEditor
             else
                 backup = File.ReadAllBytes(FileName + ".BAK");
 
-            PatchFind = PatchFind1;
-
-            for (int p = 0; p < content.Length; p++)
+            foreach (var pf in new byte[][] { PatchFind1, PatchFind2 })
             {
-                if (!DetectPatch(backup, p)) continue;
+                PatchFind = pf;
 
-                for (int w = 0; w < PatchFind.Length; w++)
+                for (int p = 0; p < content.Length; p++)
                 {
-                    ThemeColors[w] = content[p + w];
-                }
+                    if (!DetectPatch(backup, p)) continue;
 
-                if (FoundIteration > 2)
-                    break;
+                    for (int w = 0; w < PatchFind.Length; w++)
+                    {
+                        ThemeColors[w] = content[p + w];
+                    }
+
+                    if (FoundIteration > 2)
+                        break;
+                }
             }
 
             toolStripStatusLabel.Text = "Theme loaded: " + FileName;
