@@ -1,16 +1,11 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -43,22 +38,9 @@ namespace VBEThemeColorEditor
         #endregion
 
         #region Variables
-        private byte[] PatchReplace = new byte[64];
-        private byte[] ThemeColorTmp = new byte[64];
         private byte[] PatchFind;
         private int FoundIteration = 0;
         private int FoundSequences = 0;
-        //string ForeColorsVal; //= "13 5 12 1 6 15 8 5 1 1 0 0 0 0 0 0";
-        //string BackColorsVal; //= "2 7 1 13 15 2 2 2 11 9 0 0 0 0 0 0";
-        #endregion
-
-        #region XML variables
-        private string XMLname;
-        private string XMLDescription;
-        private string[] XMLhexColor = new string[16];
-        private string[] XMLitemName = new string[10];
-        private int[] XMLforeColorID = new int[10];
-        private int[] XMLbackColorID = new int[10];
         #endregion
 
         public ThemeEditorForm()
@@ -111,8 +93,7 @@ namespace VBEThemeColorEditor
             }
 
             // Apply selected theme/colors
-            LoadColorsFromButtons();
-            PatchReplace = ThemeColorTmp;
+            byte[] ThemeColors = LoadColorsFromButtons();
 
             for (int i = 0; i < 2; i++)
             {
@@ -130,11 +111,11 @@ namespace VBEThemeColorEditor
 
                     for (int w = 0; w < PatchFind.Length; w++)
                     {
-                        fileContent[p + w] = PatchReplace[w];
+                        fileContent[p + w] = ThemeColors[w];
                     }
 
                     if (FoundIteration > 2)
-                        break;                
+                        break;
                 }
             }
 
@@ -149,7 +130,7 @@ namespace VBEThemeColorEditor
 
                     toolStripStatusLabel.Text = "Theme successfully applied";
                 }
-                catch(System.IO.IOException)
+                catch (System.IO.IOException)
                 {
                     toolStripStatusLabel.Text = "Theme could not be applied";
                     MessageBox.Show("A Microsoft Office Application is opened. Please close it.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -168,7 +149,7 @@ namespace VBEThemeColorEditor
             // Show the dialog and get result.
             OpenFileDialog openFile = new OpenFileDialog();
             openFile.Filter = "VBEx.DLL|VBE7.DLL;VBE6.DLL";
-            openFile.InitialDirectory = @"C:\Program Files (x86)\Common Files\Microsoft Shared\VBA\VBA7";
+            openFile.InitialDirectory = @"C:\Program Files (x86)\Common Files\Microsoft Shared\VBA\VBA7.1";
             openFile.Title = "Select VBEx.DLL file";
 
             DialogResult result = openFile.ShowDialog();
@@ -209,8 +190,10 @@ namespace VBEThemeColorEditor
             }
         }
 
-        private void LoadColorsFromButtons()
+        private byte[] LoadColorsFromButtons()
         {
+            byte[] ThemeColorTmp = new byte[64];
+
             int tmpButtonID;
             for (int i = 1; i < 17; i++)
             {
@@ -222,6 +205,8 @@ namespace VBEThemeColorEditor
                 ThemeColorTmp[(i - 1) * 4 + 2] = tmpButton.BackColor.B;
                 ThemeColorTmp[(i - 1) * 4 + 3] = 0x00;
             }
+
+            return ThemeColorTmp;
         }
 
         private void UpdateRegistry(string ForeColorsVal, string BackColorsVal)
@@ -247,7 +232,7 @@ namespace VBEThemeColorEditor
         {
             // Show the dialog and get result.
             OpenFileDialog openFile = new OpenFileDialog();
-            openFile.Filter = "VBE Theme|*.xml";
+            openFile.Filter = "VBE Theme|*.xml;VBE7.DLL;VBE6.DLL";
             openFile.InitialDirectory = Directory.GetCurrentDirectory();
             openFile.InitialDirectory = openFile.InitialDirectory + @"\Themes";
             openFile.Title = "Select theme";
@@ -256,76 +241,90 @@ namespace VBEThemeColorEditor
 
             if (result == DialogResult.OK) // Test result.
             {
-                int j = 0;
+                string FileName = openFile.FileName;
 
-                // Load XML
-                XmlDocument xmlDoc = new XmlDocument();
-                xmlDoc.Load(openFile.FileName);
+                byte[] ThemeColors = new byte[64];
 
-                try
+                //try
+                //{
+                if (FileName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+                    LoadThemeFromXml(FileName, ThemeColors);
+                else
+                    LoadThemeFromDll(FileName, ThemeColors);
+
+                UpdateButtonColors(ThemeColors);
+                //}
+                //catch
+                //{
+                //    toolStripStatusLabel.Text = "Theme could not be loaded, invalid file";
+                //    MessageBox.Show("Invalid Theme", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                //}
+            }
+        }
+
+        private void LoadThemeFromDll(string FileName, byte[] ThemeColors)
+        {
+            byte[] content = File.ReadAllBytes(FileName);
+
+            byte[] backup;
+
+            if (FileName.EndsWith(".bak", StringComparison.OrdinalIgnoreCase))
+                backup = content;
+            else if (!File.Exists(FileName + ".BAK"))
+                backup = content;
+            else
+                backup = File.ReadAllBytes(FileName + ".BAK");
+
+            foreach (var pf in new byte[][] { PatchFind1, PatchFind2 })
+            {
+                PatchFind = pf;
+
+                for (int p = 0; p < content.Length; p++)
                 {
-                    XmlNode nodeTheme = xmlDoc.DocumentElement.SelectSingleNode("/VbeTheme");
+                    if (!DetectPatch(backup, p)) continue;
 
-                    XmlNode nodeThemeColors = nodeTheme.SelectSingleNode("ThemeColors");
-                    //XmlNode nodeItemColors = nodeTheme.SelectSingleNode("ItemColors");
-
-                    XMLname = nodeTheme.Attributes["name"]?.InnerText;
-                    XMLDescription = nodeTheme.Attributes["desc"]?.InnerText;
-
-                    foreach (XmlNode nodeColor in nodeThemeColors)
+                    for (int w = 0; w < PatchFind.Length; w++)
                     {
-                        XMLhexColor[j] = nodeColor.Attributes["HexColor"]?.InnerText;
-                        j++;
+                        ThemeColors[w] = content[p + w];
                     }
 
-                    //int k = 0;
-                    //foreach (XmlNode nodeItem in nodeItemColors)
-                    //{
-                    //    XMLitemName[k] = nodeItem.Attributes["Name"]?.InnerText;
-                    //    XMLforeColorID[k] = Convert.ToInt32(nodeItem.Attributes["ForeColorID"]?.InnerText);
-                    //    XMLbackColorID[k] = Convert.ToInt32(nodeItem.Attributes["BackColorID"]?.InnerText);
-                    //    k++;
-                    //}
-
-                    // Write data into temporary theme 
-
-                    // Colors / DLL
-                    byte[] ThemeTmpXML = new byte[64];
-                    for (int i = 0; i < 16; i++)
-                    {
-                        ThemeTmpXML[i * 4] = Convert.ToByte(Int32.Parse(XMLhexColor[i].Substring(0, 2), System.Globalization.NumberStyles.HexNumber));
-                        ThemeTmpXML[i * 4 + 1] = Convert.ToByte(Int32.Parse(XMLhexColor[i].Substring(2, 2), System.Globalization.NumberStyles.HexNumber));
-                        ThemeTmpXML[i * 4 + 2] = Convert.ToByte(Int32.Parse(XMLhexColor[i].Substring(4, 2), System.Globalization.NumberStyles.HexNumber));
-                        ThemeTmpXML[i * 4 + 3] = 0x00;
-                    }
-                    UpdateButtonColors(ThemeTmpXML);
-
-                    // Colors / Registry
-                    /*
-                    ForeColorsVal = "";
-                    for (int i = 0; i < XMLforeColorID.Length; i++)
-                    {
-                        ForeColorsVal = ForeColorsVal + XMLforeColorID[i] + " ";
-                    }
-                    ForeColorsVal = ForeColorsVal + "0 0 0 0 0 0";
-
-                    BackColorsVal = "";
-                    for (int i = 0; i < XMLbackColorID.Length; i++)
-                    {
-                        BackColorsVal = BackColorsVal + XMLbackColorID[i] + " ";
-                    }
-                    BackColorsVal = BackColorsVal + "0 0 0 0 0 0";
-                    */
-
-                    toolStripStatusLabel.Text = "Theme loaded: " + XMLDescription;
-                }
-                catch (System.NullReferenceException)
-                {
-                    // Null value
-                    toolStripStatusLabel.Text = "Theme could not be loaded, invalid XML";
-                    MessageBox.Show("Invalid XML Theme", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    if (FoundIteration > 2)
+                        break;
                 }
             }
+
+            toolStripStatusLabel.Text = "Theme loaded: " + FileName;
+        }
+
+        private void LoadThemeFromXml(string FileName, byte[] ThemeColors)
+        {
+            int j = 0;
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(FileName);
+
+            XmlNode nodeTheme = xmlDoc.DocumentElement.SelectSingleNode("/VbeTheme");
+            XmlNode nodeThemeColors = nodeTheme.SelectSingleNode("ThemeColors");
+
+            string XMLname = nodeTheme.Attributes["name"]?.InnerText;
+            string XMLDescription = nodeTheme.Attributes["desc"]?.InnerText;
+            string[] XMLhexColor = new string[16];
+
+            foreach (XmlNode nodeColor in nodeThemeColors)
+            {
+                XMLhexColor[j] = nodeColor.Attributes["HexColor"]?.InnerText;
+                j++;
+            }
+
+            // Colors / DLL
+            for (int i = 0; i < 16; i++)
+            {
+                ThemeColors[i * 4] = Convert.ToByte(Int32.Parse(XMLhexColor[i].Substring(0, 2), System.Globalization.NumberStyles.HexNumber));
+                ThemeColors[i * 4 + 1] = Convert.ToByte(Int32.Parse(XMLhexColor[i].Substring(2, 2), System.Globalization.NumberStyles.HexNumber));
+                ThemeColors[i * 4 + 2] = Convert.ToByte(Int32.Parse(XMLhexColor[i].Substring(4, 2), System.Globalization.NumberStyles.HexNumber));
+                ThemeColors[i * 4 + 3] = 0x00;
+            }
+
+            toolStripStatusLabel.Text = "Theme loaded: " + XMLDescription;
         }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
