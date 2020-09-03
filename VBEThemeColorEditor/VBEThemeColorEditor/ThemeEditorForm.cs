@@ -55,10 +55,12 @@ namespace VBEThemeColorEditor
             // Look for 1st iteration of the 1st sequence
             // and 2nd iteration of the 2nd sequence
 
-            if (position + PatchFind.Length > sequence.Length) return false;
+            if (position + PatchFind.Length > sequence.Length)
+                return false;
             for (int p = 0; p < PatchFind.Length; p++)
             {
-                if (PatchFind[p] != sequence[position + p]) return false;
+                if (PatchFind[p] != sequence[position + p])
+                    return false;
             }
 
             FoundIteration++;
@@ -75,7 +77,8 @@ namespace VBEThemeColorEditor
         {
             // Ensure target directory exists.
             var targetDirectory = Path.GetDirectoryName(originalFile);
-            if (targetDirectory == null) return;
+            if (targetDirectory == null)
+                return;
             Directory.CreateDirectory(targetDirectory);
 
             byte[] fileContent = File.ReadAllBytes(originalFile);
@@ -107,7 +110,8 @@ namespace VBEThemeColorEditor
                 // Detect and patch file.
                 for (int p = 0; p < fileContent.Length; p++)
                 {
-                    if (!DetectPatch(fileContent, p)) continue;
+                    if (!DetectPatch(fileContent, p))
+                        continue;
 
                     for (int w = 0; w < PatchFind.Length; w++)
                     {
@@ -148,7 +152,7 @@ namespace VBEThemeColorEditor
 
             // Show the dialog and get result.
             OpenFileDialog openFile = new OpenFileDialog();
-            openFile.Filter = "VBEx.DLL|VBE7.DLL;VBE6.DLL";
+            openFile.Filter = "VBEx.DLL|VBE7.DLL;VBE6.DLL|VBA6.DLL|VBA6.DLL";
             openFile.InitialDirectory = @"C:\Program Files (x86)\Common Files\Microsoft Shared\VBA\VBA7.1";
             openFile.Title = "Select VBEx.DLL file";
 
@@ -281,7 +285,8 @@ namespace VBEThemeColorEditor
 
                 for (int p = 0; p < content.Length; p++)
                 {
-                    if (!DetectPatch(backup, p)) continue;
+                    if (!DetectPatch(backup, p))
+                        continue;
 
                     for (int w = 0; w < PatchFind.Length; w++)
                     {
