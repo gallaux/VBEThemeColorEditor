@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VBEThemeColorEditor", "VBEThemeColorEditor\VBEThemeColorEditor.csproj", "{810210C6-C487-4808-96BB-57472BBC43D0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VBEThemeColorEditorCli", "VBEThemeColorEditorCli\VBEThemeColorEditorCli.csproj", "{794E3DFA-A52D-465D-9A7C-9EE4147BD666}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VBEThemeColorEditorLib", "VBEThemeColorEditorLib\VBEThemeColorEditorLib.csproj", "{A010C9DD-439B-4E0F-84CC-295678B72D5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,8 +19,19 @@ Global
 		{810210C6-C487-4808-96BB-57472BBC43D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{810210C6-C487-4808-96BB-57472BBC43D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{810210C6-C487-4808-96BB-57472BBC43D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{794E3DFA-A52D-465D-9A7C-9EE4147BD666}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{794E3DFA-A52D-465D-9A7C-9EE4147BD666}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{794E3DFA-A52D-465D-9A7C-9EE4147BD666}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{794E3DFA-A52D-465D-9A7C-9EE4147BD666}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A010C9DD-439B-4E0F-84CC-295678B72D5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A010C9DD-439B-4E0F-84CC-295678B72D5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A010C9DD-439B-4E0F-84CC-295678B72D5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A010C9DD-439B-4E0F-84CC-295678B72D5C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CE27D55A-7193-4D23-AE83-3E0F7822CC27}
 	EndGlobalSection
 EndGlobal

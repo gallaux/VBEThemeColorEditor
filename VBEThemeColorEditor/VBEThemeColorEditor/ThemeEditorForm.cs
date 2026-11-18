@@ -1,30 +1,16 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using System.Xml;
 using System.Xml.Linq;
+using VBEThemeColorEditorLib;
 
 namespace VBEThemeColorEditor
 {
     public partial class ThemeEditorForm : Form
     {
-        #region Sequences to look for
-        private readonly byte[] PatchFind1 = //1st sequence
-        {
-            0xff, 0xff, 0xff, 0x00, 0xc0, 0xc0, 0xc0, 0x00, 0x80, 0x80, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00, 0x80, 0x80, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00, 0x80, 0x80, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x80, 0x00, 0xff, 0x00, 0xff, 0x00, 0x80, 0x00, 0x80, 0x00
-        };
-
-        private readonly byte[] PatchFind2 = //2nd sequence
-        {
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80, 0x80, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x80, 0x00, 0x00, 0xc0, 0xc0, 0xc0, 0x00, 0x80, 0x80, 0x80, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0x00
-        };
-        #endregion
-
         #region Preloaded themes
         private readonly byte[] ThemeDefault = //Default VBE Theme
         {
@@ -38,117 +24,24 @@ namespace VBEThemeColorEditor
         #endregion
 
         #region Variables
-        private byte[] PatchFind;
-        private int FoundIteration = 0;
-        private int FoundSequences = 0;
+        ThemeEditor Editor;
         #endregion
 
         public ThemeEditorForm()
         {
             InitializeComponent();
+            Editor = new ThemeEditor();
             UpdateButtonColors(ThemeDefault);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool DetectPatch(byte[] sequence, int position)
-        {
-            // Look for 1st iteration of the 1st sequence
-            // and 2nd iteration of the 2nd sequence
 
-            if (position + PatchFind.Length > sequence.Length) return false;
-            for (int p = 0; p < PatchFind.Length; p++)
-            {
-                if (PatchFind[p] != sequence[position + p]) return false;
-            }
 
-            FoundIteration++;
-            if (FoundIteration == 2)
-                return false;
-            else
-            {
-                FoundSequences++;
-                return true;
-            }
-        }
-
-        private void PatchFile(string originalFile, string backupFile)
-        {
-            // Ensure target directory exists.
-            var targetDirectory = Path.GetDirectoryName(originalFile);
-            if (targetDirectory == null) return;
-            Directory.CreateDirectory(targetDirectory);
-
-            byte[] fileContent = File.ReadAllBytes(originalFile);
-
-            // Backup original file, unless it has already been done
-            if (!File.Exists(backupFile))
-            {
-                File.WriteAllBytes(backupFile, fileContent);
-                MessageBox.Show("VBEx.DLL backup has been created:\n" + backupFile);
-            }
-            else // Load backup file for a clean theme installation
-            {
-                // Read file bytes.
-                fileContent = File.ReadAllBytes(backupFile);
-            }
-
-            // Apply selected theme/colors
-            byte[] ThemeColors = LoadColorsFromButtons();
-
-            for (int i = 0; i < 2; i++)
-            {
-                if (i == 0)
-                    // 1st sequence
-                    PatchFind = PatchFind1;
-                else if (i > 0)
-                    // 2nd sequence
-                    PatchFind = PatchFind2;
-
-                // Detect and patch file.
-                for (int p = 0; p < fileContent.Length; p++)
-                {
-                    if (!DetectPatch(fileContent, p)) continue;
-
-                    for (int w = 0; w < PatchFind.Length; w++)
-                    {
-                        fileContent[p + w] = ThemeColors[w];
-                    }
-
-                    if (FoundIteration > 2)
-                        break;
-                }
-            }
-
-            if (FoundSequences == 2)
-            {
-                // Save file
-                try
-                {
-                    File.WriteAllBytes(originalFile, fileContent);
-                    //if (ForeColorsVal.Length > 0)
-                    //    UpdateRegistry(ForeColorsVal, BackColorsVal);
-
-                    toolStripStatusLabel.Text = "Theme successfully applied";
-                }
-                catch (System.IO.IOException)
-                {
-                    toolStripStatusLabel.Text = "Theme could not be applied";
-                    MessageBox.Show("A Microsoft Office Application is opened. Please close it.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            else
-                toolStripStatusLabel.Text = "Theme could not be applied";
-        }
 
         private void buttonModifyDLL_Click(object sender, EventArgs e)
         {
-            // Reset variables
-            FoundIteration = 0;
-            FoundSequences = 0;
-
             // Show the dialog and get result.
             OpenFileDialog openFile = new OpenFileDialog();
-            openFile.Filter = "VBEx.DLL|VBE7.DLL;VBE6.DLL";
+            openFile.Filter = "VBEx.DLL|VBE7.DLL;VBE6.DLL|VBA6.DLL|VBA6.DLL";
             openFile.InitialDirectory = @"C:\Program Files (x86)\Common Files\Microsoft Shared\VBA\VBA7.1";
             openFile.Title = "Select VBEx.DLL file";
 
@@ -157,7 +50,22 @@ namespace VBEThemeColorEditor
             if (result == DialogResult.OK) // Test result.
             {
                 string sFileName = openFile.FileName;
-                PatchFile(sFileName, sFileName + ".BAK");
+                byte[] ThemeColors = LoadColorsFromButtons();
+
+                try
+                {
+                    Editor.PatchFile(sFileName, ThemeColors);
+                    toolStripStatusLabel.Text = "Theme successfully applied";
+                }
+                catch (IOException)
+                {
+                    toolStripStatusLabel.Text = "Theme could not be applied";
+                    MessageBox.Show("A Microsoft Office Application is opened. Please close it.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                catch (Exception ex)
+                {
+                    toolStripStatusLabel.Text = ex.Message;
+                }
             }
         }
 
@@ -209,25 +117,6 @@ namespace VBEThemeColorEditor
             return ThemeColorTmp;
         }
 
-        private void UpdateRegistry(string ForeColorsVal, string BackColorsVal)
-        {
-            // Unused => Modifies ForeColors/BackColors values directly in the registry
-
-            RegistryKey myKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\VBA\7.0\Common", true);
-            if (myKey == null)
-                myKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\VBA\6.0\Common", true);
-
-            if (myKey != null)
-            {
-                myKey.SetValue("CodeForeColors", ForeColorsVal, RegistryValueKind.String);
-                myKey.SetValue("CodeBackColors", BackColorsVal, RegistryValueKind.String);
-                myKey.Close();
-                toolStripStatusLabel.Text = "Registry successfully updated";
-            }
-            else
-                toolStripStatusLabel.Text = "Registry key not found";
-        }
-
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Show the dialog and get result.
@@ -248,9 +137,13 @@ namespace VBEThemeColorEditor
                 //try
                 //{
                 if (FileName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
-                    LoadThemeFromXml(FileName, ThemeColors);
+                {
+                    toolStripStatusLabel.Text = Editor.LoadThemeFromXml(FileName, ThemeColors);
+                }
                 else
-                    LoadThemeFromDll(FileName, ThemeColors);
+                {
+                    toolStripStatusLabel.Text = Editor.LoadThemeFromDll(FileName, ThemeColors);
+                }
 
                 UpdateButtonColors(ThemeColors);
                 //}
@@ -262,70 +155,7 @@ namespace VBEThemeColorEditor
             }
         }
 
-        private void LoadThemeFromDll(string FileName, byte[] ThemeColors)
-        {
-            byte[] content = File.ReadAllBytes(FileName);
 
-            byte[] backup;
-
-            if (FileName.EndsWith(".bak", StringComparison.OrdinalIgnoreCase))
-                backup = content;
-            else if (!File.Exists(FileName + ".BAK"))
-                backup = content;
-            else
-                backup = File.ReadAllBytes(FileName + ".BAK");
-
-            foreach (var pf in new byte[][] { PatchFind1, PatchFind2 })
-            {
-                PatchFind = pf;
-
-                for (int p = 0; p < content.Length; p++)
-                {
-                    if (!DetectPatch(backup, p)) continue;
-
-                    for (int w = 0; w < PatchFind.Length; w++)
-                    {
-                        ThemeColors[w] = content[p + w];
-                    }
-
-                    if (FoundIteration > 2)
-                        break;
-                }
-            }
-
-            toolStripStatusLabel.Text = "Theme loaded: " + FileName;
-        }
-
-        private void LoadThemeFromXml(string FileName, byte[] ThemeColors)
-        {
-            int j = 0;
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(FileName);
-
-            XmlNode nodeTheme = xmlDoc.DocumentElement.SelectSingleNode("/VbeTheme");
-            XmlNode nodeThemeColors = nodeTheme.SelectSingleNode("ThemeColors");
-
-            string XMLname = nodeTheme.Attributes["name"]?.InnerText;
-            string XMLDescription = nodeTheme.Attributes["desc"]?.InnerText;
-            string[] XMLhexColor = new string[16];
-
-            foreach (XmlNode nodeColor in nodeThemeColors)
-            {
-                XMLhexColor[j] = nodeColor.Attributes["HexColor"]?.InnerText;
-                j++;
-            }
-
-            // Colors / DLL
-            for (int i = 0; i < 16; i++)
-            {
-                ThemeColors[i * 4] = Convert.ToByte(Int32.Parse(XMLhexColor[i].Substring(0, 2), System.Globalization.NumberStyles.HexNumber));
-                ThemeColors[i * 4 + 1] = Convert.ToByte(Int32.Parse(XMLhexColor[i].Substring(2, 2), System.Globalization.NumberStyles.HexNumber));
-                ThemeColors[i * 4 + 2] = Convert.ToByte(Int32.Parse(XMLhexColor[i].Substring(4, 2), System.Globalization.NumberStyles.HexNumber));
-                ThemeColors[i * 4 + 3] = 0x00;
-            }
-
-            toolStripStatusLabel.Text = "Theme loaded: " + XMLDescription;
-        }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {

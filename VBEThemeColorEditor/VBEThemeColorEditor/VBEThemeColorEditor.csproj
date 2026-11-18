@@ -105,6 +105,12 @@
     </Content>
     <Content Include="theme_icon.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\VBEThemeColorEditorLib\VBEThemeColorEditorLib.csproj">
+      <Project>{A010C9DD-439B-4E0F-84CC-295678B72D5C}</Project>
+      <Name>VBEThemeColorEditorLib</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
